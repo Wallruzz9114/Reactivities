@@ -1,4 +1,6 @@
 using API.Services.Interfaces;
+using Application.Activities;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,10 @@ namespace API.Services.Implementations
             services
                 .AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<DataContext>();
+            #endregion
+
+            #region Add Mediator
+            services.AddMediatR(typeof(AllActivities.Handler).Assembly);
             #endregion
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
