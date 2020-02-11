@@ -1,10 +1,10 @@
 import React, { useState, useEffect, CSSProperties, Fragment } from 'react';
-import axios, { AxiosResponse } from 'axios';
-import { Constants } from '../constants/constants';
 import { Container } from 'semantic-ui-react';
-import { IActivity } from '../models/activity';
+import { IActivity } from '../models/IActivity';
 import NavBar from '../components/navbar/NavBar';
 import ActivityDashboard from '../components/activities/ActivityDashboard';
+import { ServiceAgent } from '../services/SeviceAgent';
+import LoadingIndicator from '../components/shared/LoadingIndicator';
 
 const App: () => JSX.Element = () => {
 	const [activities, setActivities] = useState<IActivity[]>([]);
@@ -12,6 +12,9 @@ const App: () => JSX.Element = () => {
 		null
 	);
 	const [editMode, setEditMode] = useState<boolean>(false);
+	const [loading, setloading] = useState<boolean>(true);
+	const [submitting, setSubmitting] = useState<boolean>(false);
+	const [target, setTarget] = useState<string>('');
 
 	const handleSelectedActivity: (id: string) => void = (id: string) => {
 		setSelectedActivity(activities.filter((a: IActivity) => a.id === id)[0]);
@@ -26,40 +29,66 @@ const App: () => JSX.Element = () => {
 	const handleCreateActivity: (newActivity: IActivity) => void = (
 		newActivity: IActivity
 	) => {
-		setActivities([...activities, newActivity]);
-		setSelectedActivity(newActivity);
-		setEditMode(false);
+		setSubmitting(true);
+		ServiceAgent.ACTIVITIES.createActivity(newActivity)
+			.then(() => {
+				setActivities([...activities, newActivity]);
+				setSelectedActivity(newActivity);
+				setEditMode(false);
+			})
+			.then(() => setSubmitting(false));
 	};
 
 	const handleEditActivity: (activity: IActivity) => void = (
 		activity: IActivity
 	) => {
-		setActivities([
-			...activities.filter((a: IActivity) => a.id !== activity.id),
-			activity
-		]);
-		setSelectedActivity(activity);
-		setEditMode(false);
+		setSubmitting(true);
+		ServiceAgent.ACTIVITIES.updateActivity(activity)
+			.then(() => {
+				setActivities([
+					...activities.filter((a: IActivity) => a.id !== activity.id),
+					activity
+				]);
+				setSelectedActivity(activity);
+				setEditMode(false);
+			})
+			.then(() => setSubmitting(false));
 	};
 
-	const handleDeleteActivity: (id: string) => void = (id: string) => {
-		setActivities([...activities.filter((a: IActivity) => a.id !== id)]);
+	const handleDeleteActivity: (
+		event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+		id: string
+	) => void = (
+		event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+		id: string
+	) => {
+		setSubmitting(true);
+		setTarget(event.currentTarget.name);
+		ServiceAgent.ACTIVITIES.deleteActivity(id)
+			.then(() => {
+				setActivities([...activities.filter((a: IActivity) => a.id !== id)]);
+			})
+			.then(() => setSubmitting(false));
 	};
 
 	useEffect(() => {
-		axios
-			.get<IActivity[]>(Constants.GET_ACTIVITIES_URL)
-			.then((response: AxiosResponse<IActivity[]>) => {
+		ServiceAgent.ACTIVITIES.getAllActivities()
+			.then((response: IActivity[]) => {
 				const allActivities: IActivity[] = [];
 
-				response.data.forEach((activity: IActivity) => {
+				response.forEach((activity: IActivity) => {
 					activity.date = activity.date.split('.')[0];
 					allActivities.push(activity);
 				});
 
 				setActivities(allActivities);
-			});
+			})
+			.then(() => setloading(false));
 	}, []);
+
+	if (loading) {
+		return <LoadingIndicator content='Loading activities...' />;
+	}
 
 	return (
 		<Fragment>
@@ -75,6 +104,8 @@ const App: () => JSX.Element = () => {
 					createActivity={handleCreateActivity}
 					editActivity={handleEditActivity}
 					deleteActivity={handleDeleteActivity}
+					submitting={submitting}
+					target={target}
 				/>
 			</Container>
 		</Fragment>

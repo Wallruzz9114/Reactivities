@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Segment, Form, Button } from 'semantic-ui-react';
-import { IActivity } from '../../models/activity';
+import { IActivity } from '../../models/IActivity';
 import { v4 as uuid } from 'uuid';
 
 interface IProps {
@@ -8,6 +8,7 @@ interface IProps {
 	selectedActivity: IActivity | null;
 	createActivity: (newActivity: IActivity) => void;
 	editActivity: (activity: IActivity) => void;
+	submitting: boolean;
 }
 
 const ActivityForm: React.FC<IProps> = (
@@ -102,9 +103,10 @@ const ActivityForm: React.FC<IProps> = (
 				/>
 				<Button
 					floated='right'
+					loading={props.submitting}
 					positive={true}
 					type='submit'
-					content='Create'
+					content='Submit'
 				/>
 				<Button
 					onClick={() => props.setEditMode(false)}
