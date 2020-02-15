@@ -1,11 +1,11 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useContext } from 'react';
 import { Menu, Container, Button } from 'semantic-ui-react';
+import ActivityStore, { MyActivityStore } from '../../stores/ActivityStore';
+import { observer } from 'mobx-react-lite';
 
-interface IProps {
-	openCreateActivityForm: () => void;
-}
+const NavBar: React.FC = () => {
+	const activityStore: MyActivityStore = useContext(ActivityStore);
 
-const NavBar: React.FC<IProps> = (props: React.PropsWithChildren<IProps>) => {
 	return (
 		<Menu fixed='top' inverted={true}>
 			<Container>
@@ -16,7 +16,7 @@ const NavBar: React.FC<IProps> = (props: React.PropsWithChildren<IProps>) => {
 				<Menu.Item name='activities' />
 				<Menu.Item>
 					<Button
-						onClick={props.openCreateActivityForm}
+						onClick={activityStore.openCreateActivityForm}
 						positive={true}
 						content='Create Activity'
 					/>
@@ -30,4 +30,4 @@ const imageStyle: CSSProperties = {
 	marginRight: '10px'
 };
 
-export default NavBar;
+export default observer(NavBar);
