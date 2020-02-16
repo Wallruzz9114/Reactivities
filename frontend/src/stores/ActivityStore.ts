@@ -9,7 +9,6 @@ export class MyActivityStore {
 	@observable activityRegistry = new Map<string, IActivity>();
 	@observable selectedActivity: IActivity | undefined;
 	@observable loadingInitial = false;
-	@observable editMode = false;
 	@observable submitting = false;
 	@observable targetElement = '';
 
@@ -86,12 +85,10 @@ export class MyActivityStore {
 
 			runInAction('Create Activity', () => {
 				this.activityRegistry.set(newActivity.id, newActivity);
-				this.editMode = false;
 				this.submitting = false;
 			});
 		} catch (error) {
 			runInAction('Create Activity Error', () => {
-				this.editMode = false;
 				this.submitting = false;
 			});
 			alert(error);
@@ -109,7 +106,6 @@ export class MyActivityStore {
 			runInAction('Edit Activity', () => {
 				this.activityRegistry.set(activityToUpdate.id, activityToUpdate);
 				this.selectedActivity = activityToUpdate;
-				this.editMode = false;
 				this.submitting = false;
 			});
 		} catch (error) {
@@ -147,37 +143,6 @@ export class MyActivityStore {
 
 			alert(error);
 		}
-	};
-
-	@action openCreateActivityForm: () => void = () => {
-		runInAction('Open Create Activity', () => {
-			this.editMode = true;
-			this.selectedActivity = undefined;
-		});
-	};
-
-	@action openEditActivityForm: (id: string | undefined) => void = (
-		id: string | undefined
-	) => {
-		if (id !== undefined) {
-			runInAction('Open Create Activity', () => {
-				this.selectedActivity = this.activityRegistry.get(id);
-				this.editMode = true;
-			});
-		}
-	};
-
-	@action cancelSelectedActivity: () => void = () => {
-		this.selectedActivity = undefined;
-	};
-
-	@action cancelEditActivityForm: () => void = () => {
-		this.editMode = false;
-	};
-
-	@action selectActivity: (id: string) => void = (id: string) => {
-		this.selectedActivity = this.activityRegistry.get(id);
-		this.editMode = false;
 	};
 }
 
