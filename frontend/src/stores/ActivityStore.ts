@@ -12,12 +12,39 @@ export class MyActivityStore {
 	@observable submitting = false;
 	@observable targetElement = '';
 
-	@computed get activitiesSortedByDate(): IActivity[] {
-		return Array.from(this.activityRegistry.values()).sort(
+	@computed get activitiesSortedByDate(): Array<[string, IActivity[]]> {
+		return this.groupActivitiesByDate(
+			Array.from(this.activityRegistry.values())
+		);
+	}
+
+	groupActivitiesByDate: (
+		allActivities: IActivity[]
+	) => Array<[string, IActivity[]]> = (allActivities: IActivity[]) => {
+		const sortedActivities = allActivities.sort(
 			(firstActivity: IActivity, nextActivity: IActivity) =>
 				Date.parse(firstActivity.date) - Date.parse(nextActivity.date)
 		);
-	}
+
+		return Object.entries(
+			sortedActivities.reduce(
+				(
+					activities: {
+						[key: string]: IActivity[];
+					},
+					activity: IActivity
+				) => {
+					const date: string = activity.date.split('T')[0];
+					activities[date] = activities[date]
+						? [...activities[date], activity]
+						: [activity];
+
+					return activities;
+				},
+				{} as { [key: string]: IActivity[] }
+			)
+		);
+	};
 
 	// Action to load all activities
 	@action loadActivities: () => Promise<void> = async () => {

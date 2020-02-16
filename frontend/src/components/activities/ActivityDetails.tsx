@@ -1,9 +1,13 @@
 import React, { useContext, useEffect } from 'react';
-import { Card, Image, Button } from 'semantic-ui-react';
+import { Grid } from 'semantic-ui-react';
 import ActivityStore, { MyActivityStore } from '../../stores/ActivityStore';
 import { observer } from 'mobx-react-lite';
-import { RouteComponentProps, Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router-dom';
 import LoadingIndicator from '../shared/LoadingIndicator';
+import ActivityDetailsHeader from './ActivityDetailsHeader';
+import ActivityDetailsInfo from './ActivityDetailsInfo';
+import ActivityDetailsChat from './ActivityDetailsChat';
+import ActivityDetailsSidebar from './ActivityDetailsSidebar';
 
 interface IActivityDetails {
 	id: string;
@@ -25,39 +29,16 @@ const ActivityDetails: React.FC<RouteComponentProps<IActivityDetails>> = (
 	return activityStore.loadingInitial ? (
 		<LoadingIndicator content='Loading activity...' />
 	) : (
-		<Card fluid={true}>
-			<Image
-				src={`/assets/${activityStore.selectedActivity?.category}.jpg`}
-				wrapped={true}
-				ui={false}
-			/>
-			<Card.Content>
-				<Card.Header>{activityStore.selectedActivity?.title}</Card.Header>
-				<Card.Meta>
-					<span>{activityStore.selectedActivity?.date}</span>
-				</Card.Meta>
-				<Card.Description>
-					{activityStore.selectedActivity?.description}
-				</Card.Description>
-			</Card.Content>
-			<Card.Content extra={true}>
-				<Button.Group widths={2}>
-					<Button
-						as={Link}
-						to={`/activity/${activityStore.selectedActivity?.id}`}
-						basic={true}
-						color='blue'
-						content='Edit'
-					/>
-					<Button
-						onClick={() => routeComponent.history.push('/activities')}
-						basic={true}
-						color='orange'
-						content='Cancel'
-					/>
-				</Button.Group>
-			</Card.Content>
-		</Card>
+		<Grid>
+			<Grid.Column width={10}>
+				<ActivityDetailsHeader activity={activityStore.selectedActivity} />
+				<ActivityDetailsInfo activity={activityStore.selectedActivity} />
+				<ActivityDetailsChat />
+			</Grid.Column>
+			<Grid.Column width={6}>
+				<ActivityDetailsSidebar />
+			</Grid.Column>
+		</Grid>
 	);
 };
 
