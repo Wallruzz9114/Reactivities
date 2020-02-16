@@ -1,44 +1,73 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Segment, Form, Button } from 'semantic-ui-react';
 import { IActivity } from '../../models/IActivity';
 import { v4 as uuid } from 'uuid';
 import ActivityStore, { MyActivityStore } from '../../stores/ActivityStore';
 import { observer } from 'mobx-react-lite';
+import { RouteComponentProps } from 'react-router-dom';
 
-interface IProps {
-	selectedActivity: IActivity | undefined;
+interface IActivityDetails {
+	id: string;
 }
 
-const ActivityForm: React.FC<IProps> = (
-	props: React.PropsWithChildren<IProps>
+const ActivityForm: React.FC<RouteComponentProps<IActivityDetails>> = (
+	routeComponent: React.PropsWithChildren<RouteComponentProps<IActivityDetails>>
 ) => {
 	const activityStore: MyActivityStore = useContext(ActivityStore);
 
-	const initializeForm: () =>
-		| IActivity
-		| {
-				id: string;
-				title: string;
-				category: string;
-				description: string;
-				date: string;
-				city: string;
-				venue: string;
-		  } = () => {
-		return props.selectedActivity != null
-			? props.selectedActivity
-			: {
-					id: '',
-					title: '',
-					category: '',
-					description: '',
-					date: '',
-					city: '',
-					venue: ''
-			  };
-	};
+	const [activity, setActivity] = useState<IActivity>({
+		id: '',
+		title: '',
+		category: '',
+		description: '',
+		date: '',
+		city: '',
+		venue: ''
+	});
 
-	const [activity, setActivity] = useState<IActivity>(initializeForm);
+	useEffect(() => {
+		const initializeForm: () =>
+			| IActivity
+			| {
+					id: string;
+					title: string;
+					category: string;
+					description: string;
+					date: string;
+					city: string;
+					venue: string;
+			  } = () => {
+			return activityStore.selectedActivity != null
+				? activityStore.selectedActivity
+				: {
+						id: '',
+						title: '',
+						category: '',
+						description: '',
+						date: '',
+						city: '',
+						venue: ''
+				  };
+		};
+
+		if (routeComponent.match.params.id && activity.id.length === 0) {
+			activityStore
+				.loadActivity(routeComponent.match.params.id)
+				.then(
+					() => activityStore.selectedActivity && setActivity(initializeForm)
+				);
+		}
+
+		return () => {
+			activityStore.clearActivity();
+		};
+	}, [
+		activityStore,
+		activityStore.loadActivity,
+		activityStore.clearActivity,
+		routeComponent.match.params.id,
+		activity.id.length
+	]);
 
 	const handleInputChange: (
 		event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -54,9 +83,15 @@ const ActivityForm: React.FC<IProps> = (
 				id: uuid()
 			};
 
-			activityStore.createActivity(newActivity);
+			activityStore
+				.createActivity(newActivity)
+				.then(() =>
+					routeComponent.history.push(`/activities/${newActivity.id}`)
+				);
 		} else {
-			activityStore.editActivity(activity);
+			activityStore
+				.editActivity(activity)
+				.then(() => routeComponent.history.push(`/activities/${activity.id}`));
 		}
 	};
 
@@ -109,7 +144,7 @@ const ActivityForm: React.FC<IProps> = (
 					content='Submit'
 				/>
 				<Button
-					onClick={activityStore.cancelEditActivityForm}
+					onClick={() => routeComponent.history.push('/activities')}
 					floated='right'
 					type='button'
 					color='orange'

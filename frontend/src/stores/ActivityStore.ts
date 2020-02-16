@@ -20,7 +20,7 @@ export class MyActivityStore {
 		);
 	}
 
-	// Action to lead all activities
+	// Action to load all activities
 	@action loadActivities: () => Promise<void> = async () => {
 		this.loadingInitial = true;
 
@@ -44,7 +44,39 @@ export class MyActivityStore {
 		}
 	};
 
-	@action createActivity: (activity: IActivity) => void = async (
+	@action loadActivity: (id: string) => Promise<void> = async (id: string) => {
+		let activity: IActivity | undefined = this.getActivity(id);
+
+		if (activity) {
+			this.selectedActivity = activity;
+		} else {
+			this.loadingInitial = true;
+
+			try {
+				activity = await ServiceAgent.ACTIVITIES.getOneActivity(id);
+
+				runInAction('Get Ane Activity', () => {
+					this.selectedActivity = activity;
+					this.loadingInitial = false;
+				});
+			} catch (error) {
+				runInAction('Get one Activity Error', () => {
+					this.loadingInitial = false;
+				});
+				alert(error);
+			}
+		}
+	};
+
+	@action clearActivity = () => {
+		this.selectedActivity = undefined;
+	};
+
+	getActivity: (id: string) => IActivity | undefined = (id: string) => {
+		return this.activityRegistry.get(id);
+	};
+
+	@action createActivity: (activity: IActivity) => Promise<void> = async (
 		newActivity: IActivity
 	) => {
 		this.submitting = true;
@@ -89,7 +121,10 @@ export class MyActivityStore {
 		}
 	};
 
-	@action deleteActivity = async (
+	@action deleteActivity: (
+		id: string,
+		event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+	) => Promise<void> = async (
 		id: string,
 		event: React.MouseEvent<HTMLButtonElement, MouseEvent>
 	) => {

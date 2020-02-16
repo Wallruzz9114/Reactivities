@@ -1,34 +1,44 @@
-import React, { useEffect, CSSProperties, Fragment, useContext } from 'react';
+import React, { Fragment } from 'react';
 import { Container } from 'semantic-ui-react';
 import NavBar from '../components/navbar/NavBar';
 import ActivityDashboard from '../components/activities/ActivityDashboard';
-import LoadingIndicator from '../components/shared/LoadingIndicator';
-import ActivityStore, { MyActivityStore } from '../stores/ActivityStore';
 import { observer } from 'mobx-react-lite';
+import { CustomStyles } from '../styles/CustomStyles';
+import { Route, withRouter, RouteComponentProps } from 'react-router-dom';
+import HomePage from '../components/pages/HomePage';
+import ActivityForm from '../components/activities/ActivityForm';
+import ActivityDetails from '../components/activities/ActivityDetails';
 
-const App: () => JSX.Element = () => {
-	const activityStore: MyActivityStore = useContext(ActivityStore);
-
-	useEffect(() => {
-		activityStore.loadActivities();
-	}, [activityStore]);
-
-	if (activityStore.loadingInitial) {
-		return <LoadingIndicator content='Loading activities...' />;
-	}
-
+const App: React.FC<RouteComponentProps> = (
+	routeComponent: React.PropsWithChildren<RouteComponentProps>
+) => {
 	return (
 		<Fragment>
-			<NavBar />
-			<Container style={containerStyle}>
-				<ActivityDashboard />
-			</Container>
+			<Route exact={true} path='/' component={HomePage} />
+			<Route
+				exact={true}
+				path={'/(.+)'}
+				render={() => (
+					<Fragment>
+						<NavBar />
+						<Container style={CustomStyles.MAIN_CONTAINER_STYLE}>
+							<Route
+								exact={true}
+								path='/activities'
+								component={ActivityDashboard}
+							/>
+							<Route path='/activities/:id' component={ActivityDetails} />
+							<Route
+								key={routeComponent.location.key}
+								path={['/new-activity', '/activity/:id']}
+								component={ActivityForm}
+							/>
+						</Container>
+					</Fragment>
+				)}
+			/>
 		</Fragment>
 	);
 };
 
-const containerStyle: CSSProperties = {
-	marginTop: '7em'
-};
-
-export default observer(App);
+export default withRouter(observer(App));
