@@ -1,5 +1,6 @@
 using API.Services.Interfaces;
 using Application.Activities;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,9 @@ namespace API.Services.Implementations
             services.AddMediatR(typeof(AllActivities.Handler).Assembly);
             #endregion
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .AddFluentValidation(cfg => cfg.RegisterValidatorsFromAssemblyContaining<CreateActivity>())
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             #region Swagger Configuration
             services.AddSwaggerGen(c =>

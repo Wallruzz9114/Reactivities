@@ -23,8 +23,13 @@ const ActivityDetails: React.FC<RouteComponentProps<IActivityDetails>> = (
 	}, [
 		activityStore,
 		activityStore.loadActivity,
-		routeComponent.match.params.id
+		routeComponent.match.params.id,
+		routeComponent.history
 	]);
+
+	if (!activityStore.selectedActivity) {
+		return <h2>Activity Not Found</h2>;
+	}
 
 	return activityStore.loadingInitial ? (
 		<LoadingIndicator content='Loading activity...' />

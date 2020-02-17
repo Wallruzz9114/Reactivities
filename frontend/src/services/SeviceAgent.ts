@@ -1,7 +1,27 @@
 import { IActivity } from './../models/IActivity';
 import axios, { AxiosResponse } from 'axios';
+import { history } from '..';
+import { toast } from 'react-toastify';
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
+axios.interceptors.response.use(undefined, (error: any) => {
+	if (error.message === 'Network Error' && !error.response) {
+		toast.error('Network Error - Make sure API is running!');
+	}
+
+	if (
+		error.response.status === 404 ||
+		(error.response.status === 400 &&
+			error.config.method === 'get' &&
+			error.response.data.hasOwnProperty('id'))
+	) {
+		history.push('/notfound');
+	}
+
+	if (error.response.status === 500) {
+		toast.error('Server error - Check the terminal for more info!');
+	}
+});
 const responseBody = (response: AxiosResponse) => response.data;
 const sleep = (ms: number) => (response: AxiosResponse) =>
 	new Promise<AxiosResponse>(

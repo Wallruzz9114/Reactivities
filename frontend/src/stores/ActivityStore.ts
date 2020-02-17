@@ -66,7 +66,7 @@ export class MyActivityStore {
 				this.loadingInitial = false;
 			});
 
-			alert(error);
+			console.log(error);
 		}
 	};
 
@@ -89,7 +89,7 @@ export class MyActivityStore {
 				runInAction('Get one Activity Error', () => {
 					this.loadingInitial = false;
 				});
-				alert(error);
+				console.log(error);
 			}
 		}
 	};
@@ -118,7 +118,7 @@ export class MyActivityStore {
 			runInAction('Create Activity Error', () => {
 				this.submitting = false;
 			});
-			alert(error);
+			console.log(error);
 		}
 	};
 
@@ -140,7 +140,7 @@ export class MyActivityStore {
 				this.submitting = false;
 			});
 
-			alert(error);
+			console.log(error);
 		}
 	};
 
@@ -168,7 +168,7 @@ export class MyActivityStore {
 				this.targetElement = '';
 			});
 
-			alert(error);
+			console.log(error);
 		}
 	};
 }

@@ -1,6 +1,8 @@
+using System.Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Errors;
 using MediatR;
 using Persistence;
 
@@ -27,7 +29,7 @@ namespace Application.Activities
                 var activityFromDB = await _context.Activities.FindAsync(request.Id);
 
                 if (activityFromDB == null)
-                    throw new Exception("Could not grab activity from database");
+                    throw new RESTException(HttpStatusCode.NotFound, new { activity = "Not found" });
 
                 _context.Remove(activityFromDB);
 
