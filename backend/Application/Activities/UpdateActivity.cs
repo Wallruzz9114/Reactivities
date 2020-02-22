@@ -22,9 +22,9 @@ namespace Application.Activities
             public string Venue { get; set; }
         }
 
-        public class CommadValidator : AbstractValidator<Command>
+        public class CommandValidator : AbstractValidator<Command>
         {
-            public CommadValidator()
+            public CommandValidator()
             {
                 RuleFor(x => x.Title).NotEmpty();
                 RuleFor(x => x.Description).NotEmpty();
@@ -38,6 +38,7 @@ namespace Application.Activities
         public class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
+
             public Handler(DataContext context)
             {
                 _context = context;

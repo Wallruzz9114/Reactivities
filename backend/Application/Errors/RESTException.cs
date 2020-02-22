@@ -1,5 +1,6 @@
 using System.Net;
 using System;
+
 namespace Application.Errors
 {
     public class RESTException : Exception
