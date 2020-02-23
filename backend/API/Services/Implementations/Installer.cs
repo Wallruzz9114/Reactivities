@@ -1,10 +1,13 @@
 using System.Text;
 using API.Services.Interfaces;
-using Application.Activities;
+using Application.Activities.Commands;
+using Application.Activities.Queries;
 using Application.Interfaces;
+using AutoMapper;
 using Domain;
 using FluentValidation.AspNetCore;
 using Infrastructure.Security;
+using Infrastructure.Security.Authorization.Hosts;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +29,11 @@ namespace API.Services.Implementations
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
             #region Registering DbContext
-            services.AddDbContext<DataContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<DataContext>(options =>
+            {
+                options.UseLazyLoadingProxies();
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            });
             services
                 .AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<DataContext>();
@@ -34,6 +41,10 @@ namespace API.Services.Implementations
 
             #region Add Mediator
             services.AddMediatR(typeof(AllActivities.Handler).Assembly);
+            #endregion
+
+            #region Automapper
+            services.AddAutoMapper(typeof(AllActivities.Handler));
             #endregion
 
             services.AddMvc(options =>
@@ -66,6 +77,16 @@ namespace API.Services.Implementations
 
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<ApplicationUser>>();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsActivityHost", policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
 
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["TokenKey"]));
 
