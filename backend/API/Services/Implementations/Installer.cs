@@ -6,6 +6,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using FluentValidation.AspNetCore;
+using Infrastructure.Photos;
 using Infrastructure.Security;
 using Infrastructure.Security.Authorization.Hosts;
 using MediatR;
@@ -104,6 +105,11 @@ namespace API.Services.Implementations
 
             services.AddScoped<IJWTGenerator, JWTGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
+            #endregion
+
+            #region Cloudinary Settings
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             #endregion
 
             #region Swagger Configuration

@@ -73,7 +73,7 @@ namespace Application.Users.Commands
                         DisplayName = user.DisplayName,
                         Token = _jwtGenerator.CreateToken(user),
                         Username = user.UserName,
-                        Image = null
+                        Image = user.Photos.FirstOrDefault(p => p.IsMain)?.URL
                     };
 
                 throw new Exception("Problem creating new user");
